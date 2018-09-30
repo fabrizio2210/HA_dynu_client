@@ -3,6 +3,8 @@
 #  Test if a site has the alive page
 # A page with a word "alive" is expected in path "alive.html"
 
+[ ! -z "$DYNU_DEBUG" ] && set -x
+
 IP='localhost'
 port='80'
 virtualHost='none'

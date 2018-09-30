@@ -194,10 +194,13 @@ def getIP():
   return jsonResult
   
 def isAvailable(virtualHost, IP, port):
+  log("Verify availability for " + IP + ":" + port)
   rc = subprocess.call([externalTest, "-v " + virtualHost, "-i "+ IP , "-p " + str(port)])
   if rc == 0 :
+    log("IP is UP")
     return True
   else:
+    log("IP is DOWN")
     return False
 
 # Try to make a request, if there is a problem of authentication get credential and try again
