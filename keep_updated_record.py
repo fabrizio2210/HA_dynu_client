@@ -243,30 +243,31 @@ while True:
   log('PING\n' + str(data))
   ##############
   # List records
-  records = makeRequest(method='GET', path="dns/records/wally.accesscam.org")
+  records = makeRequest(method='GET', path="dns/records/" + domain_name)
   log('RECORDS:\n' + str(records))
   
   found = 0
   if records is not None:
     for record in records:
-      if not record['ipv4_address'] is None:
-        log( str(record['hostname']) + "@" + str(record['location']) + ": " + str(record['ipv4_address']))
-        if isAvailable(virtualHost = record['hostname'], IP = record['ipv4_address'], port = servicePort):
-          # enable
-          if record['state'] != True:
-            log( "Enable " + str(record['hostname']) + str(record['id']), 1)
-            makeRequest(path='dns/record/enable/'+str(record['id']))
-        else:
-          # disable
-          if record['state'] != False:
-            log( "Disable " + str(record['hostname']) + str(record['id']), 1)
-            makeRequest(path='dns/record/disable/'+str(record['id']))
-      if record['node_name'] == node_name:
-        if record['location'] == location:
-          found = 1
-          own_id = record['id']
-          log( "Found own location")
-  
+      if 'ipv4_address' in record:
+        if not record['ipv4_address'] is None:
+          log( str(record['hostname']) + "@" + str(record['location']) + ": " + str(record['ipv4_address']))
+          if isAvailable(virtualHost = record['hostname'], IP = record['ipv4_address'], port = servicePort):
+            # enable
+            if record['state'] != True:
+              log( "Enable " + str(record['hostname']) + str(record['id']), 1)
+              makeRequest(path='dns/record/enable/'+str(record['id']))
+          else:
+            # disable
+            if record['state'] != False:
+              log( "Disable " + str(record['hostname']) + str(record['id']), 1)
+              makeRequest(path='dns/record/disable/'+str(record['id']))
+        if record['node_name'] == node_name:
+          if record['location'] == location:
+            found = 1
+            own_id = record['id']
+            log( "Found own location")
+    
   
   if found == 0:
     DATA = { u'domain_name'  : domain_name,
