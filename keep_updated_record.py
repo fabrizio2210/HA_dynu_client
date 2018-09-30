@@ -195,7 +195,7 @@ def getIP():
   
 def isAvailable(virtualHost, IP, port):
   log("Verify availability for " + IP + ":" + port)
-  rc = subprocess.call([externalTest, "-v " + virtualHost, "-i "+ IP , "-p " + str(port)])
+  rc = subprocess.call([externalTest, "-v " + virtualHost, "-i"+ IP , "-p" + str(port)])
   if rc == 0 :
     log("IP is UP")
     return True
