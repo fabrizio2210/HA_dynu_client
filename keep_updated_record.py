@@ -149,6 +149,10 @@ if not os.access(externalTest, os.X_OK):
   log("The test is not executable: " + externalTest, 1)
   sys.exit(1)
 
+# Sanitize location
+location = location.replace("-","")
+location = location.replace("_","")
+
 # Ask for a new token
 def getCredentials():
   log("Getting credentials")
