@@ -249,6 +249,7 @@ while True:
   records = makeRequest(method='GET', path="dns/records/" + domain_name)
   log('RECORDS:\n' + str(records))
   
+  myIP = getIP()['ip']
   found = 0
   if records is not None:
     for record in records:
@@ -270,12 +271,16 @@ while True:
             found = 1
             own_id = record['id']
             log( "Found own location")
+          if record['ipv4_address'] == myIP:
+            if record['location'] != location:
+              log("Found an duplicate IP with different location. Deleting it...")
+              makeRequest(path='dns/record/delete/'+str(record['id']))
     
   
   if found == 0:
     DATA = { u'domain_name'  : domain_name,
              u'record_type'  : u'A', 
-             u'ipv4_address' : getIP()['ip'],
+             u'ipv4_address' : myIP,
              u'node_name'    : node_name ,
              u'location'     : location ,
              u'state'        : u'true' }
