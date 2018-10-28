@@ -152,6 +152,7 @@ if not os.access(externalTest, os.X_OK):
 # Sanitize location
 location = location.replace("-","")
 location = location.replace("_","")
+location = location.replace(".","")
 
 # Ask for a new token
 def getCredentials():
@@ -259,26 +260,26 @@ while True:
     for record in records:
       if 'ipv4_address' in record:
         if not record['ipv4_address'] is None:
-          log( str(record['hostname']) + "@" + str(record['location']) + ": " + str(record['ipv4_address']))
-          if isAvailable(virtualHost = record['hostname'], IP = record['ipv4_address'], port = servicePort):
-            # enable
-            if record['state'] != True:
-              log( "Enable " + str(record['hostname']) + str(record['id']), 1)
-              makeRequest(path='dns/record/enable/'+str(record['id']))
-          else:
-            # disable
-            if record['state'] != False:
-              log( "Disable " + str(record['hostname']) + str(record['id']), 1)
-              makeRequest(path='dns/record/disable/'+str(record['id']))
-        if record['node_name'] == node_name:
-          if record['location'] == location:
-            found = 1
-            own_id = record['id']
-            log( "Found own location")
-          if record['ipv4_address'] == myIP:
-            if record['location'] != location:
-              log("Found an duplicate IP with different location. Deleting it...")
-              makeRequest(path='dns/record/delete/'+str(record['id']))
+          log(str(record['hostname']) + "@" + str(record['location']) + ": " + str(record['ipv4_address']))
+          if record['node_name'] == node_name and record['domain_name'] == domain_name:
+            if isAvailable(virtualHost = record['hostname'], IP = record['ipv4_address'], port = servicePort):
+              # enable
+              if record['state'] != True:
+                log( "Enable " + str(record['hostname']) + str(record['id']), 1)
+                makeRequest(path='dns/record/enable/'+str(record['id']))
+            else:
+              # disable
+              if record['state'] != False:
+                log( "Disable " + str(record['hostname']) + str(record['id']), 1)
+                makeRequest(path='dns/record/disable/'+str(record['id']))
+            if record['location'] == location:
+              found = 1
+              own_id = record['id']
+              log( "Found own location")
+            if record['ipv4_address'] == myIP:
+              if record['location'] != location:
+                log("Found an duplicate IP with different location. Deleting it...")
+                makeRequest(path='dns/record/delete/'+str(record['id']))
     
   
   if found == 0:
