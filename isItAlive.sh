@@ -13,16 +13,16 @@ secure='0'
 while getopts ":v:i:p:s:" opt; do
   case $opt in
     v)
-      virtualHost=$OPTARG
+      virtualHost=$(echo $OPTARG | tr -d '[[:space:]]')
       ;;
 		i)
-			IP=$OPTARG
+			IP=$(echo $OPTARG | tr -d '[[:space:]]')
 			;;
 		p)
-			port=$OPTARG
+			port=$( echo $OPTARG | tr -d '[[:space:]]')
 			;;
 		s)
-			secure=$OPTARG
+			secure=$( echo $OPTARG | tr -d '[[:space:]]')
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
@@ -33,7 +33,7 @@ done
 if [ $secure == '1' ] ; then
   s='s'
 fi
-response=$(curl --connect-timeout 10 -s -H "Host: $virtualHost" http$s://$IP:$port/alive.html)
+response=$(curl --connect-timeout 10 -s --resolve "$virtualHost:$port:$IP" http$s://$virtualHost:$port/alive.html)
 if echo $response | grep -q alive ; then
   exit 0
 else

@@ -29,7 +29,8 @@ accessToken = None
 timeToUpdate = 60
 debug = 0
 servicePort = 80
-externalTest = './isItAlive.sh'
+#externalTest = './isItAlive.sh'
+externalTest = './isIt200.sh'
 
 # print 
 def log(msg, severity = 0):
