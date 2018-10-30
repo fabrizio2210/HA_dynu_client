@@ -244,6 +244,7 @@ while True:
 
   ###########
   # UPDATE IP
+  # IP are updated only for enabled records
   updateIP()
   
   ######
@@ -257,6 +258,7 @@ while True:
   
   myIP = getIP()['ip']
   found = 0
+  state = u'true'
   if records is not None:
     for record in records:
       if 'ipv4_address' in record:
@@ -273,10 +275,18 @@ while True:
               if record['state'] != False:
                 log( "Disable " + str(record['hostname']) + str(record['id']), 1)
                 makeRequest(path='dns/record/disable/'+str(record['id']))
+
             if record['location'] == location:
-              found = 1
-              own_id = record['id']
-              log( "Found own location")
+              if record['ipv4_address'] == myIP:
+                found = 1
+                own_id = record['id']
+                log( "Found own location")
+              else:
+                log( "Found own location, but the IP is different. Deleting it...")
+                makeRequest(path='dns/record/delete/'+str(record['id']))
+                # Insert as disabled so the next cycle is enabled if available
+                state = u'false'
+
             if record['ipv4_address'] == myIP:
               if record['location'] != location:
                 log("Found an duplicate IP with different location. Deleting it...")
@@ -289,7 +299,7 @@ while True:
              u'ipv4_address' : myIP,
              u'node_name'    : node_name ,
              u'location'     : location ,
-             u'state'        : u'true' }
+             u'state'        : state }
     log('Provo ad inserire:\n' +  str(DATA))
     data = makeRequest(method='POST', path="dns/record/add", data=DATA)
     log(str(data))
