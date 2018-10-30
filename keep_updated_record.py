@@ -257,6 +257,7 @@ while True:
   log('RECORDS:\n' + str(records))
   
   myIP = getIP()['ip']
+  log('My IP is ' + myIP)
   found = 0
   state = u'true'
   if records is not None:
