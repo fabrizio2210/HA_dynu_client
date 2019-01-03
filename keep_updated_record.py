@@ -258,13 +258,15 @@ while True:
   
   myIP = getIP()['ip']
   log('My IP is ' + myIP)
-  found = 0
+  serviceFound = 0
+  hostFound = 0
   state = u'true'
   if records is not None:
     for record in records:
       if 'ipv4_address' in record:
         if not record['ipv4_address'] is None:
           log(str(record['hostname']) + "@" + str(record['location']) + ": " + str(record['ipv4_address']))
+          # Check for the records used to access to the service
           if record['node_name'] == node_name and record['domain_name'] == domain_name:
             if isAvailable(virtualHost = record['hostname'], IP = record['ipv4_address'], port = servicePort):
               # enable
@@ -279,7 +281,7 @@ while True:
 
             if record['location'] == location:
               if record['ipv4_address'] == myIP:
-                found = 1
+                serviceFound = 1
                 own_id = record['id']
                 log( "Found own location")
               else:
@@ -292,18 +294,41 @@ while True:
               if record['location'] != location:
                 log("Found an duplicate IP with different location. Deleting it...")
                 makeRequest(path='dns/record/delete/'+str(record['id']))
+
+          # Check for the record that identify this host
+          # Check for location.hostname.domain_name.dynu.net
+          if record['node_name'] == location + '.' + node_name and record['domain_name'] == domain_name:
+            if record['ipv4_address'] != myIP:
+              log("Found hostname with different IP. Deleting it...")
+              makeRequest(path='dns/record/delete/'+str(record['id']))
+            else:
+              hostFound = 1
     
   
-  if found == 0:
+  if serviceFound == 0:
     DATA = { u'domain_name'  : domain_name,
              u'record_type'  : u'A', 
              u'ipv4_address' : myIP,
              u'node_name'    : node_name ,
              u'location'     : location ,
              u'state'        : state }
-    log('Provo ad inserire:\n' +  str(DATA))
+    log('Trying to insert:\n' +  str(DATA))
     data = makeRequest(method='POST', path="dns/record/add", data=DATA)
     log(str(data))
+
+  # Insert the location hostname
+  if hostFound == 0:
+    DATA = { u'domain_name'  : domain_name,
+             u'record_type'  : u'A', 
+             u'ipv4_address' : myIP,
+             u'node_name'    : location + '.' + node_name ,
+             u'location'     : location ,
+             u'state'        : u'true' }
+    log('Trying to insert:\n' +  str(DATA))
+    data = makeRequest(method='POST', path="dns/record/add", data=DATA)
+    log(str(data))
+
+  # Update TXT record of the domain
 
   log("Wait for next cycle...")
   time.sleep(timeToUpdate)
