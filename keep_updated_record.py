@@ -260,9 +260,13 @@ while True:
   log('My IP is ' + myIP)
   serviceFound = 0
   hostFound = 0
+  nodesFound = 0
+  nodesTxtId = 0
   state = u'true'
   if records is not None:
     for record in records:
+
+    # Checking A records
       if 'ipv4_address' in record:
         if not record['ipv4_address'] is None:
           log(str(record['hostname']) + "@" + str(record['location']) + ": " + str(record['ipv4_address']))
@@ -303,7 +307,12 @@ while True:
               makeRequest(path='dns/record/delete/'+str(record['id']))
             else:
               hostFound = 1
-    
+      if record['record_type'] == u'TXT':
+        if record['node_name'] == node_name and record['domain_name'] == domain_name:
+          nodesTxtId = record['id']
+          if record['text_data'].find(location + '@' + location + '.' + node_name + '.' + domain_name) != -1:
+            log('Found own hostname in TXT record')
+            nodesFound = 1
   
   if serviceFound == 0:
     DATA = { u'domain_name'  : domain_name,
@@ -327,6 +336,36 @@ while True:
     log('Trying to insert:\n' +  str(DATA))
     data = makeRequest(method='POST', path="dns/record/add", data=DATA)
     log(str(data))
+
+  if nodesFound == 0:
+    if nodesTxtId == 0:
+      log('No TXT data found')
+      DATA = { u'domain_name'  : domain_name,
+               u'record_type'  : u'TXT', 
+               u'text_data'    : u'nodes=' + location + '@' + location + '.' + node_name + '.' + domain_name,
+               u'node_name'    : node_name ,
+               u'location'     : location ,
+               u'state'        : u'true' }
+      log('Trying to insert:\n' +  str(DATA))
+      data = makeRequest(method='POST', path="dns/record/add", data=DATA)
+      log(str(data))
+    else:
+      record = makeRequest(path="dns/record/get/" + str(nodesTxtId))
+      log("Deleting the record " + str(nodesTxtId) + ' for substituting it')
+      makeRequest(path='dns/record/delete/' + str(record['id']))
+      nodesList = record['text_data'].split('=')[1]
+      DATA = { u'domain_name'  : domain_name,
+               u'record_type'  : u'TXT', 
+               u'text_data'    : u'nodes='+ nodesList + ',' + location + '@' + location + '.' + node_name + '.' + domain_name,
+               u'node_name'    : node_name ,
+               u'location'     : location ,
+               u'state'        : u'true' }
+      log('Trying to insert:\n' +  str(DATA))
+      data = makeRequest(method='POST', path="dns/record/add", data=DATA)
+      log(str(data))
+        
+      
+      
 
   # Update TXT record of the domain
 
