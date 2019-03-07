@@ -187,7 +187,8 @@ def updateIP():
   
 def getIP():
   try:
-      r = requests.get(url = 'https://api.ipify.org', params = { 'format' : 'json'})
+      r = requests.get(url = 'http://api.ipify.org', params = { 'format' : 'json'})
+      log("Getting IP from http://api.ipify.org")
   except:
     log("Problem during retieve my IP https://api.ipify.org", 1)
     return  None
@@ -196,8 +197,8 @@ def getIP():
   except:
     log("Request error: " + str(r.status_code) + " " + r.reason, 1)
     log("No return value", 1)
-    return None
-  return jsonResult
+    return '0.0.0.0'
+  return jsonResult['ip']
   
 def isAvailable(virtualHost, IP, port):
   log("Verify availability for " + IP + ":" + str(port))
@@ -256,7 +257,7 @@ while True:
   records = makeRequest(method='GET', path="dns/records/" + domain_name)
   log('RECORDS:\n' + str(records))
   
-  myIP = getIP()['ip']
+  myIP = getIP()
   log('My IP is ' + myIP)
   serviceFound = 0
   hostFound = 0
