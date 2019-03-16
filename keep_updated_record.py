@@ -308,6 +308,8 @@ while True:
               makeRequest(path='dns/record/delete/'+str(record['id']))
             else:
               hostFound = 1
+
+    # Checking TXT records
       if record['record_type'] == u'TXT':
         if record['node_name'] == node_name and record['domain_name'] == domain_name:
           nodesTxtId = record['id']
@@ -352,8 +354,6 @@ while True:
       log(str(data))
     else:
       record = makeRequest(path="dns/record/get/" + str(nodesTxtId))
-      log("Deleting the record " + str(nodesTxtId) + ' for substituting it')
-      makeRequest(path='dns/record/delete/' + str(record['id']))
       nodesList = record['text_data'].split('=')[1]
       DATA = { u'domain_name'  : domain_name,
                u'record_type'  : u'TXT', 
@@ -364,6 +364,8 @@ while True:
       log('Trying to insert:\n' +  str(DATA))
       data = makeRequest(method='POST', path="dns/record/add", data=DATA)
       log(str(data))
+      log("Deleting the record " + str(nodesTxtId) + ' for substituting it')
+      makeRequest(path='dns/record/delete/' + str(record['id']))
         
       
       
